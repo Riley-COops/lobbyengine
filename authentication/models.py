@@ -52,8 +52,21 @@ class CustomUser(AbstractUser):
         blank=True
     )
 
+@receiver(post_save, sender=CustomUser)
+def registration_email(sender, instance, created,**kwargs):
+    from django.core.mail import send_mail
+    from django.conf import settings
+    if created:
+        send_mail(
+            subject="Registration Successful",
+            message = f"Dear {instance.email}, you have been successfully registered on Lobby ",
+            from_mail = settings.DEFAULT_FROM_MAIL,
+            recipient_list = [instance.email],
+            fail_silently = False,
+        )
 
 class Profile(models.Model):
+    from organisation.models import Address
 
     CATEGORY_CHOICE={
        'PERSONNEL': 'Personnel',
@@ -63,7 +76,7 @@ class Profile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICE, default='PERSONNEL')
     dob =  models.DateTimeField(auto_now=True)
-    # location=  models.CharField(max_length=100)
+    location = models.CharField(max_length=100, null=True)
     telephone = models.CharField(max_length=100, null=True)
     job_description = models.CharField(max_length=100, null=False)
 
@@ -74,11 +87,6 @@ class Profile(models.Model):
         return self.user
 
 
-class Location(models.Model):
-    address = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
-    region = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
 
 @receiver(post_save, sender=CustomUser)
 def create_profile(sender, instance, created, **kwargs):
