@@ -1,8 +1,9 @@
 from django.db import models
-from authentication.models import CustomUser
+from django.conf import settings
 
 # Create your models here.
 
+CustomUser = settings.AUTH_USER_MODEL
 
 class Address (models.Model):
     street = models.CharField(max_length=100)
@@ -16,7 +17,6 @@ class Address (models.Model):
 class Organisation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False)
-    location = models.CharField(max_length=200)
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
     telephone = models.CharField(max_length=200)
     date_established = models.DateField(auto_now=True)
