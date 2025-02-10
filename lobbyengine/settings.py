@@ -15,7 +15,7 @@ ALLOWED_HOSTS = []
 
 
 INSTALLED_APPS = [
-    'daphne',
+    # 'daphne',
     'channels',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -127,9 +127,9 @@ DJOSER = {
     'ACTIVATION_URL': 'activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SERIALIZERS': {
-        'user_create': 'authentication.serializers.CustomUserSerializer',  
-        'user': 'authentication.serializers.CustomUserSerializer',
-        'current_user': 'authentication.serialisers.CustomUserSerializer',  
+        'user_create': 'authentication.serializers.UserCreationSerializer',  
+        'user': 'authentication.serializers.UserCreationSerializer',
+        'current_user': 'authentication.serialisers.UserCreationSerializer',  
         'token_create': 'authentication.serializers.TokenCreateSerializer',
     },
 }
@@ -155,4 +155,14 @@ EMAIL_USE_SSL = False
 
 DEFAULT_FROM_EMAIL = 'incoporafrica@gmail.com'
 
-AUTH_USER_MODEL = 'authentication.CustomUser'
+# AUTH_USER_MODEL = 'authentication.CustomUser'
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG" : {
+            "hosts": [("127.0.0.1", 6379)]
+        }
+    }
+}

@@ -1,14 +1,11 @@
 from django.db import models
-from django.conf import settings
+from django.contrib.auth import get_user_model
 
-
-
-CustomUser = settings.AUTH_USER_MODEL
-
+User = get_user_model()
 
 class Messages(models.Model):
-    sender= models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_message')
-    recipient = models.ForeignKey(CustomUser, related_name='recieved_message', on_delete=models.CASCADE)
+    sender= models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_message')
+    recipient = models.ForeignKey(User, related_name='recieved_message', on_delete=models.CASCADE)
     content = models.TextField()
     attachment = models.FileField(upload_to='attachments/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)

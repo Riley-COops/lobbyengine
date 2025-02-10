@@ -1,5 +1,7 @@
 from django.db import models
-from authentication.models import CustomUser
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class Post(models.Model):
     CONTENT_TYPE_CHOICES = [
@@ -8,7 +10,7 @@ class Post(models.Model):
         ('video', 'Video'),
     ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='posts')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField(blank=True, null=True)  # Text content
     content_type = models.CharField(max_length=10, choices=CONTENT_TYPE_CHOICES, default='text')
     file = models.FileField(upload_to='uploads/', blank=True, null=True)  

@@ -1,9 +1,12 @@
 from django.db import models
 
-from authentication.models import CustomUser
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 class Notification(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
