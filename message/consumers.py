@@ -2,10 +2,11 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import Message
-from django.conf import settings
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
-CustomerUser = settings.AUTH_USER_MODEL
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):

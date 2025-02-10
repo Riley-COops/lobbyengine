@@ -1,9 +1,7 @@
 from django.db import models
-from django.conf import settings
+from django.contrib.auth import get_user_model
 
-# Create your models here.
-
-CustomUser = settings.AUTH_USER_MODEL
+User = get_user_model()
 
 class Address (models.Model):
     street = models.CharField(max_length=100)
@@ -15,7 +13,7 @@ class Address (models.Model):
 
 
 class Organisation(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False)
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
     telephone = models.CharField(max_length=200)
