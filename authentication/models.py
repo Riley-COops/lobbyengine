@@ -1,57 +1,85 @@
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.conf import settings
 
+class CustomUserManager(BaseUserManager):
+    def create_user(self, username, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("Email is required")
+        if not username:
+            raise ValueError("Username is required")
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        return self.create_user(username=username, email=email, password=password, **extra_fields)
 
 
-class Profile(models.Model):
-    from organisation.models import Address
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    ACCOUNT_CHOICES = [
+        # ('personal', 'Personal'),
+        ('investor', 'Investor'),
+        ('organisation', 'Organisation'),
+    ]
 
-    CATEGORY_CHOICE={
-       'PERSONNEL': 'Personnel',
-        'INVESTOR ': 'Investor'
-    }
+    username = models.CharField(max_length=150, unique=True, null=False, blank=False)
+    email = models.EmailField(unique=True)
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_CHOICES, default='organisation')
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    category = models.CharField(max_length=10, choices=CATEGORY_CHOICE, default='PERSONNEL')
-    dob =  models.DateTimeField(auto_now=True)
-    location = models.CharField(max_length=100, null=True)
-    telephone = models.CharField(max_length=100, null=True)
-    job_description = models.CharField(max_length=100, null=False)
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
 
-
-
+    objects = CustomUserManager()
 
     def __str__(self):
-        return self.user
+        return self.email
 
 
-@receiver(post_save, sender=User)
-def registration_email(sender, instance, created,**kwargs):
-    from django.core.mail import send_mail
-    from django.conf import settings
-    if created:
-        send_mail(
-            subject="Registration Successful",
-            message = f"Dear {instance.email}, you have been successfully registered on Lobby ",
-            from_mail = settings.DEFAULT_FROM_EMAIL,
-            recipient_list = [instance.email],
-            fail_silently = False,
-        )
 
 
-@receiver(post_save, sender=User)
-def create_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
+
+class InvestorProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    birth_date = models.DateField()
+    bio = models.TextField(blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
+    telephone = models.CharField(max_length=15, blank=True, null=True)
+    investment_preferences = models.TextField(blank=True, null=True)
+
+    # organisations = models.ManyToManyField('OrganisationProfile', blank=True, related_name='investors')
+
+    def __str__(self):
+        return self.user.username
 
 
-@receiver(post_save, sender=User)
-def save_profile(sender, instance, **kwargs):
-    try:
-        instance.profile.save()
-    except Profile.DoesNotExist:
-        # Handle the case where a Profile instance doesn't exist
-        pass
+class OrganisationProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
+    telephone = models.CharField(max_length=15, blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.user.username
+
+
+class PersonalProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='personal_profile')
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    birth_date = models.DateField()
+    bio = models.TextField(blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
+    telephone = models.CharField(max_length=15, blank=True, null=True)
+    job_title = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return self.user.username
